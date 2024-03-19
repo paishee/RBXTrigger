@@ -1,19 +1,19 @@
--- script running on the client context for handling player refreshing and setup upon joining or dying
+repeat task.wait() until game:IsLoaded();
+
+local events = game.ReplicatedStorage:WaitForChild("TriggerEvents");
+
+local event = events.PlayerHandler;
+local players = game.Players;
 
 
-pcall(function()
-	local event = game.ReplicatedStorage.TriggerEvents.PlayerHandler;
-	local players = game.Players;
-
-	players.PlayerAdded:Connect(function(player)
-		player.CharacterAdded:Connect(function()
-			event:FireServer();
-		end)
+players.PlayerAdded:Connect(function(player)
+	player.CharacterAdded:Connect(function()
+		event:FireServer();
 	end)
-
-	for _, player in ipairs(players:GetChildren()) do
-		player.CharacterAdded:Connect(function()
-			event:FireServer();
-		end)
-	end
 end)
+
+for _, player in ipairs(players:GetChildren()) do
+	player.CharacterAdded:Connect(function()
+		event:FireServer();
+	end)
+end
