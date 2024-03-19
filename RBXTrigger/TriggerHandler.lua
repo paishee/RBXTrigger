@@ -1,6 +1,3 @@
--- local script that gets put into the player's starter character scripts on the creation of a trigger inst
-
-
 local RunService = game:GetService("RunService");
 local rep = game:GetService("ReplicatedStorage");
 
@@ -19,7 +16,7 @@ inEvent.OnClientEvent:Connect(function(partSects, id, triggerSettings)
 	local TouchPart = nil;
 	
 	
-	if (not pcall(function() return character["TriggerHitbox?trigid="..id] end)) then
+	if (not character:FindFirstChild("TriggerHitbox?trigid="..id)) then
 		TouchPart = Instance.new("Part", character);
 		TouchPart.Name = "TriggerHitbox?trigid="..id;
 		TouchPart.Anchored = true;
