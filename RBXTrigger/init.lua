@@ -7,7 +7,6 @@ local sp = game:GetService("StarterPlayer");
 local cs = game:GetService("CollectionService");
 local rep = game:GetService("ReplicatedStorage");
 local rs = game:GetService("RunService");
-local Textures = script.Textures;
 
 
 
@@ -78,15 +77,13 @@ function Trigger.new(triggerPart, triggerSettings)
 
 	}, Trigger);
 	
+	triggerPart.Transparency = 1;
+	
 	
 	if (triggerSettings) then
 		if (triggerSettings.PartTransparency) then
 			triggerPart.Transparency = triggerSettings.PartTransparency
-		else
-			triggerPart.Transparency = 1;
 		end
-	else
-		triggerPart.Transparency = 1;
 	end
 	
 	
@@ -97,29 +94,21 @@ function Trigger.new(triggerPart, triggerSettings)
 	local TriggerPlayerHandler = nil;
 	
 	
-	if (not pcall(function() return scs.TriggerScripts end)) then
+	if (not scs:FindFirstChild("TriggerScripts")) then
 		TriggerScriptsFolders = Instance.new("Folder", scs);
 		TriggerScriptsFolders.Name = "TriggerScripts";
 	else
 		TriggerScriptsFolders = scs.TriggerScripts;
 	end
 	
-	
-	if (not pcall(function() return workspace.TriggerParts end)) then
-		TriggerPartsFolders = Instance.new("Folder", workspace);
-		TriggerPartsFolders.Name = "TriggerParts";
-	else
-		TriggerPartsFolders = workspace.TriggerParts;
-	end
-	
-	if (not pcall(function() return rep.TriggerEvents end)) then
+	if (not rep:FindFirstChild("TriggerEvents")) then
 		TriggerEventsFolders = Instance.new("Folder", rep);
 		TriggerEventsFolders.Name = "TriggerEvents";
 	else
 		TriggerEventsFolders = rep.TriggerEvents;
 	end
 	
-	if (not pcall(function() return workspace.TriggerPlayerHandler end)) then
+	if (not workspace:FindFirstChild("TriggerPlayerHandler")) then
 		TriggerPlayerHandler = script.TriggerPlayerHandler:Clone();
 		TriggerPlayerHandler.Parent = workspace;
 	else
@@ -129,11 +118,9 @@ function Trigger.new(triggerPart, triggerSettings)
 		
 	local TriggerScriptFolder = Instance.new("Folder", TriggerScriptsFolders);
 	local TriggerEventFolder = Instance.new("Folder", TriggerEventsFolders);
-	local TriggerPartFolder = Instance.new("Folder", TriggerPartsFolders);
 	
 	TriggerScriptFolder.Name = id;
 	TriggerEventFolder.Name = id;
-	TriggerPartFolder.Name = id;
 	
 	local TriggerHandler = script.TriggerHandler:Clone();
 	TriggerHandler.Parent = TriggerScriptFolder;
@@ -200,7 +187,7 @@ function Trigger:Activate()
 			local triggerSettings = self.Settings;
 
 
-			if (not pcall(function() return character["TriggerHitbox?trigid="..id] end)) then
+			if (not character:FindFirstChild("TriggerHitbox?trigid="..id)) then
 				TouchPart = Instance.new("Part", character);
 				TouchPart.Name = "TriggerHitbox?trigid="..id;
 				TouchPart.Anchored = true;
@@ -247,6 +234,8 @@ function Trigger:Activate()
 						TouchPart.CFrame = HumanoidRootPart.CFrame + TouchPart.Offset.Value;
 						return TouchPart:GetTouchingParts();
 					end
+					
+					return {};
 				end
 
 
@@ -271,6 +260,13 @@ function Trigger:Activate()
 					touchBoolean = false;
 				end
 			end);
+
+			
+			local dir = GetFullName(self.Part);
+			
+			player.CharacterAdded:Connect(function()
+				ActivateClient();
+			end)
 		end
 		
 		
@@ -291,19 +287,26 @@ end
 function Trigger:Visualize(transparency)
 	if (not transparency) then transparency = 0.5 end
 	
-	for _, rawTexture in ipairs(Textures:GetChildren()) do
-		local texture = rawTexture:Clone();
-		texture.Parent = self.Part;
+	local sides = { "Front", "Back", "Right", "Left", "Top", "Bottom" };
+	self.Textures = {};
 
+	for _, side in ipairs(sides) do
+		local texture = Instance.new("Texture", self.Part);
+		
 		if (self.Settings) then
 			if (self.Settings.TextureTransparency) then
-				texture.Transparency = self.Settings.TextureTransparency
-			else
-				texture.Transparency = transparency;
+				transparency = self.Settings.TextureTransparency;
 			end
-		else
-			texture.Transparency = transparency;
+			
+			if (self.Settings.Texture) then
+				texture = self.Settings.Texture
+			end
 		end
+		
+		texture.Texture = "http://www.roblox.com/asset/?id=16742889088";
+		texture.Transparency = transparency;
+		texture.Face = Enum.NormalId[side];
+		self.Textures[side] = texture;
 	end
 end
 
@@ -314,21 +317,25 @@ function Trigger:VisualizeAll(transparency)
 	for _, child in workspace:GetChildren() do
 		if (string.find(child.Name, "?trigid=") ~= nil) then
 			
-			for _, rawTexture in ipairs(Textures:GetChildren()) do
-				local texture = rawTexture:Clone();
-				texture.Parent = self.Part;
+			local sides = { "Front", "Back", "Right", "Left", "Top", "Bottom" };
+
+			for _, side in ipairs(sides) do
+				local texture = Instance.new("Texture", self.Part);
 
 				if (self.Settings) then
 					if (self.Settings.TextureTransparency) then
-						texture.Transparency = self.Settings.TextureTransparency
-					else
-						texture.Transparency = transparency;
+						texture.Transparency = self.Settings.TextureTransparency;
 					end
-				else
-					texture.Transparency = transparency;
+
+					if (self.Settings.Texture) then
+						texture = self.Settings.Texture
+					end
 				end
+
+				texture.Texture = "http://www.roblox.com/asset/?id=16742889088";
+				texture.Transparency = transparency;
+				texture.Face = Enum.NormalId[side];
 			end
-			
 		end
 	end
 end
